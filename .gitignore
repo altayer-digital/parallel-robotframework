@@ -1,0 +1,11 @@
+error_logs.txt
+.idea
+results*/*
+results/*
+result/*
+parallel_results/*
+*.pyc
+*.DS_Store
+log.html
+report.html
+venv/*

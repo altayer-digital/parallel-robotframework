@@ -1,0 +1,7 @@
+page_lang_verify = "Become a member"
+search_term = "red"
+verify_search_page = "css=.js-searchInput"
+verify_result_text = "The 4 red flags I missed as the startup imploded"
+long_search_term = "Jeff Bezos"
+no_result_term = "asdasd adasdjlasd asdkasdkasjd asdaskjdlaskjdlas"
+no_result_text = "We couldn’t find any posts."

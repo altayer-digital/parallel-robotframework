@@ -1,0 +1,18 @@
+half:
+  xmin: "2s"
+  min: "5s"
+  mid: "10s"
+  max:  "15s"
+  xmax: "30s"
+single:
+  xmin: "4s"
+  min: "10s"
+  mid: "20s"
+  max:  "30s"
+  xmax: "60s"
+double:
+  xmin: "8s"
+  min: "20s"
+  mid: "40s"
+  max:  "60s"
+  xmax: "120s"
