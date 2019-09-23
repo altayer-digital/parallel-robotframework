@@ -10,35 +10,7 @@ Library    RequestsLibrary
 Library    ../../execution/lib/CustomLib.py
 
 Variables  ./selectors/common.py
-
-*** Variables ***
-
-${BROWSER}                        chrome
-${BROWSER_SELECTOR}               mac_chrome
-${PLATFORM_SELECTOR}              mac
-${DEFAULT_WINDOWS_VERSION}        10
-${DEFAULT_MAC_VERSION}            Sierra
-${REMOTE_DESIRED}                 ${false}
-${SELENIUM_TIMEOUT}               10 seconds
-${IS_IE}                          ${false}
-${REMOTE_SESSION}                 get session id
-${WEBSITE}                        google
-${WEBSITE_URL}                    https://www.google.com
-${BSUser}                         USERNAME
-${AccessKey}                      ACCESSKEY
-${REMOTE_URL}                     http://${BSUser}:${AccessKey}@hub.browserstack.com:80/wd/hub
-${LANGUAGE}                       ${EMPTY}
-${COUNTRY}                        ${EMPTY}
-${TEST NAME}                      NONE
-${SUITE NAME}                     NONE
-${TMP_PATH}                       /tmp
-${TIME_OUT}                       single
-
-${t_xmin}  4s
-${t_min}   10s
-${t_mid}   20s
-${t_max}   30s
-${t_xmax}  60s
+Variables  ./config.py
 
 *** Keywords ***
 
@@ -60,11 +32,21 @@ Open Browser And Setup
     set global variable  ${t_max}   ${temp_max}
     set global variable  ${t_xmax}   ${temp_xmax}
 
-    &{mac_chrome}  Create Dictionary  platform=MAC  browserName=chrome  resolution=1280x1024  project=${WEBSITE}  browser_version=61  name=[Test-name: @{parts}[3] - ${test_name}]  browserstack.debug=true  browserstack.networkLogs=true  browserstack.geoLocation=${LANGUAGE}
+    &{config}  Create Dictionary
+    ...     platform=${PLATFORM}
+    ...     browserName=${BROWSER}
+    ...     resolution=${RESOLUTION}
+    ...     project=${WEBSITE}
+    ...     browser_version=${BROWSER_VERSION}
+    ...     name=[Test-name: @{parts}[3] - ${test_name}]
+    ...     browserstack.debug=${BROWSER_DEBUG}
+    ...     browserstack.networkLogs=${BROWSER_NETWORK}
 
-    set tags  ${BROWSER_SELECTOR}
-    run keyword if  '${BROWSER_SELECTOR}'=='mac_chrome'   Open Chrome Browser  ${WEBSITE_URL}  remote_url=${REMOTE_URL}    browser=&{mac_chrome}[browserName]  desired_capabilities=&{mac_chrome}
-    ...  ELSE  Open Browser   ${WEBSITE_URL}  remote_url=${False}  browser=${BROWSER}
+    run keyword if  '${CONFIG_SELECTOR}' == 'main_config'
+    ...     Open Chrome Browser  ${WEBSITE_URL}  remote_url=${REMOTE_URL}
+    ...     browser=&{config}[browserName]
+    ...     desired_capabilities=&{config}
+    ...     ELSE     ${WEBSITE_URL}  remote_url=${False}  browser=${BROWSER}
 
     run keyword and ignore error  Maximize Browser Window
     run keyword and ignore error  Close Pop-up
@@ -72,26 +54,42 @@ Open Browser And Setup
     wait until page contains element  &{home_logo}[${WEBSITE}]  ${t_max}
 
 Open Chrome Browser
-    [Arguments]  ${site}  ${remote_url}  ${browser}  ${desired_capabilities}
-    ${remote_url}=  run keyword if  ${REMOTE_DESIRED} == ${False}   Local settings for Chrome   ${site}
-    ...     ELSE    set variable  ${remote_url}
-    run keyword if  ${REMOTE_DESIRED} == ${True}   Open Browser  ${site}  remote_url=${remote_url}  browser=${browser}  desired_capabilities=${desired_capabilities}
-    run keyword if  ${REMOTE_DESIRED} == ${True}    Get Build And Session Id And Print It On Console
+    [Documentation]
+    ...     Open browser with parameters
 
-Get Build And Session Id And Print It On Console
-    ${REMOTE_SESSION}=    Selenium2Library.get session id
-    ${build_id}=  get_browser_stack_build_id  ${BSUser}  ${AccessKey}
+    [Arguments]  ${site}  ${remote_url}  ${browser}  ${desired_capabilities}
+    ${remote_url}=  run keyword if  ${REMOTE_DESIRED} == ${False}   local settings for chrome   ${site}
+    ...     ELSE    set variable  ${remote_url}
+
+    run keyword if  ${REMOTE_DESIRED} == ${True}   open browser  ${site} 
+    ...     remote_url=${remote_url}
+    ...     browser=${browser}
+    ...     desired_capabilities=${desired_capabilities}
+
+    run keyword if  ${REMOTE_DESIRED} == ${True}    Print BS Session URL
+
+Print BS Session URL
+    [Documentation]
+    ...     Gets build snd session id and print it on console
+
+    ${REMOTE_SESSION}=    SeleniumLibrary.get session id
+    ${build_id}=  get browser stack build id  ${BSUser}  ${AccessKey}
     log to console   ${\n}Browser Stack Session: https://automate.browserstack.com/builds/${build_id}/sessions/${remote_session}
 
 Local Settings For Chrome
+    [Documentation]
+    ...     This keyword is used to run test in local docker chrome browser
+
     [Arguments]  ${site}
     Start Virtual Display    1920    1080
     ${options}  Evaluate  sys.modules['selenium.webdriver'].ChromeOptions()  sys, selenium.webdriver
-    Call Method  ${options}  add_argument  --no-sandbox
-    ${prefs}    Create Dictionary    download.default_directory=${TMP_PATH}
-    Call Method    ${options}    add_experimental_option    prefs    ${prefs}
-    Create Webdriver    Chrome    chrome_options=${options}
+    call method  ${options}  add_argument  --no-sandbox
+    ${prefs}    create dictionary    download.default_directory=${TMP_PATH}
+    call method    ${options}    add_experimental_option    prefs    ${prefs}
+    create webdriver    Chrome    chrome_options=${options}
+
     go to  ${site}
+
     [Return]  ${EMPTY}
 
 Go To Link

@@ -10,6 +10,7 @@ Search with Invalid input
   ...  - User should not be able to find any items by a search like "noitemswiththiskeyword".
   ...  - user should see such text "not found" on this page.
   [Tags]  search  smoke
+
   Verify language
   Go to Search Result by Enter   ${no_result_term}
   Verify No Result Found
@@ -17,6 +18,7 @@ Search with Invalid input
 Search with Keyword and Verify result page
   [Documentation]  User should be able to search for result by using "Enter" and verify result page.
   [Tags]  search  smoke
+
   Go to Search Result by Enter
   Verify Result
 
@@ -24,6 +26,7 @@ Search with follow up words after initial search
   [Documentation]  User will enter another word for better search result,
   ...  - Search result should follow user and provide more precise results
   [Tags]  search  smoke
+
   ${first_word}=    First word for search
   Search  ${first_word}
   Verify Result is not Refined
